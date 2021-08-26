@@ -1,0 +1,134 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>Title</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <script src="~/Scripts/jquery-3.6.0.min.js" type="text/javascript"></script>
+    <script src="~/Scripts/bootstrap.min.js" type="text/javascript"></script>
+    <script src="~/Scripts/vue.js" type="text/javascript"></script>
+    <script src="~/Scripts/axios.min.js" type="text/javascript"></script>
+
+    <style>
+        /* 黑条 */
+        #switcher {
+            height: 55px;
+            width: 100%;
+            top: 0;
+            background: #000;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="" style="">
+
+    <div id="switcher">
+
+    </div>
+    <div id="container" class="container">
+        <br>
+        <form class="form-inline">
+            <div class="form-group">
+                <input type="text" placeholder="请输入搜索关键字" class="form-control" id="searchInput"><button class="btn btn-default" v-on:click.prevent="searchFn">搜索</button>
+            </div>
+        </form>
+        <hr>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>用户名称</th>
+                    <th>创建时间</th>
+                    <th>总金额</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="Order in Orders">
+                    <td>{{Order.id}}</td>
+                    <td>{{Order.UserId}}</td>
+                    <td>{{DealDate(Order.CreateTime)}}</td>
+                    <td>{{Order.Price}}</td>
+                    <td>
+                        <button type="button" class="btn btn-default" v-on:click="FindOrderDetail(Order.id)">查看</button>
+                        <button type="button" class="btn btn-danger" v-on:click="DeleteOrder(Order.id)">删除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script>
+			var app = new Vue({
+				el: "#container",
+				data: {
+                    Orders:[],
+				},
+				created: function() {
+				    this.FindAllOrder();
+				},
+				methods: {
+					FindAllOrder: function() {
+					    axios.get("/Order/FindAllOrder")
+                        .then(function (res) {
+                            console.log(res)
+                            if (res.data.status == 200) {
+                                app.Orders = res.data.obj;
+                            } else {
+                                console.log(res.data.msg);
+                            }
+                        })
+					},
+					FindOrderDetail: function(id) {
+					    location.href = "/Order/OrderDetail?id=" + id;
+					},
+					DeleteOrder: function (id) {
+					    var flag = confirm("你确定要删除该条数据么？");
+					    if (flag == false) {
+					        return;
+					    }
+					    axios.post("/Order/DeleteOrder", {
+					        "id": id
+					    }).then(function (res) {
+					        if (res.data.status == 200) {
+					            alert(res.data.msg);
+					        } else {
+					            alert(res.data.msg);
+					        }
+					    });
+					    this.FindAllOrder();
+					    location.reload();
+					},
+					DealDate: function (date) {
+					    if (date == "") {
+					        return "无";
+					    }
+					    var myDate = new Date(parseInt(date.replace(/\/Date\((-?\d+)\)\//, '$1')));
+					    var m = myDate.getMonth() + 1;
+					    var d = myDate.getDate();
+					    var dateTime = myDate.getFullYear() + "-" + (m > 9 ? m : ("0" + m))
+                        + "-" + (d > 9 ? d : ("0" + d)) + " " + myDate.toLocaleTimeString().substring(2);
+
+					    return dateTime;
+					},
+					searchFn: function () {
+					    var key = $("#searchInput").val();
+					    if (key == "") {
+                            alert("请输入关键字")
+					        return;
+					    }
+					    axios.post("/Order/FindOneOrderByKey", {
+                            "key":key
+					    }).then(function (res) {
+					        if (res.data.status==200) {
+					            app.Orders = res.data.obj;
+					        } else {
+					            console.log(res.data.msg);
+					        }
+					    })
+					}
+				}
+			})
+    </script>
+</body>
+</html>

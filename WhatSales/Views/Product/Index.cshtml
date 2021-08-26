@@ -1,0 +1,175 @@
+﻿@model WhatSales.Models.User
+@{
+    Layout = "~/Views/Shared/sharedPage.cshtml";
+}
+<div id="app">
+    <div class="container">
+        <div class="page-header">
+            <a href="/Product/Index" style="text-decoration:none;display:inline-block;"><h1>What Sales<small>电商平台</small></h1></a>
+            <a href="/Order/Cart" style="float:right;cursor:pointer;"><h2 style="display:inline-block;">@Model.UserName</h2><h3 style="display:inline-block;">的购物车</h3></a>
+        </div>
+        <div class="nav breadcrumb">
+            <div class="left-nav" style="float:left;">
+                <ol class="breadcrumb" style="margin:10px auto;">
+                    <li v-for="category in categoryList"><a href="#" v-on:click="FindProductListByCatecoryId(category.id)">{{category.TypeName}}</a></li>
+                </ol>
+            </div>
+            <div class="right-nav" style="float:right;height:56px;">
+                <div class="navbar-form navbar-left" style="margin:10px auto;">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search" id="search" v-model="searchName">
+                    </div>
+                    <input style="float:right;" type="button" class="btn btn-default" value="搜索" v-on:click="FuzzyQuery">
+                </div>
+            </div>
+        </div>
+        <div>
+            <div>
+                <div class="col-md-3" style="padding-left:0px;">
+                    <ul class="list-group" style="margin:0;height:300px;background-color:#eee;">
+                        <li class="list-group-item" v-for="property in propertys" style="background-color:#eee;cursor:pointer;">
+                            <a v-on:click="PropertyQuery(property)">{{property}}</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="jumbotron col-md-9">
+                <h1>Hello, world!</h1>
+                <p>...</p>
+                <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a></p>
+            </div>
+        </div>
+        <div class="home">
+            <div class="layer">
+                <div class="layer-title"><h1 style="margin:20px auto;text-align:center;">商品列表</h1></div>
+                <div class="layer-body">
+                    <div class="row">
+                        <div class="col-xs-6 col-md-3" v-for="product in productList">
+                            <a :href="ToDetail(product.id)" style="text-decoration:none;">
+                                <div class="thumbnail">
+                                    <div style="height:180px;background-color:#eee;">
+                                        <h3 style="white-space: nowrap;text-overflow: ellipsis;overflow: hidden;margin-top:0;padding:50px 10px 0 10px;">{{product.ProductName}}</h3>
+                                    </div>
+                                    <div class="caption">
+                                        <span class="label label-primary" v-text="product.Active==1?'爆品':'无货'"></span>
+                                        <span class="label label-primary" v-for="p in product.Property">{{p.color}}{{p.name}}</span>
+                                        <span class="label label-primary">Primary</span>
+                                        <p style="text-align:right;color:red;">${{product.Price}}</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            categoryList: [],
+            productList: [],
+            propertys: [],
+            searchName: ""
+        },
+        methods: {
+            FindProductListByCatecoryId: function (id) {
+                axios.post("/product/FindProductListByCatecoryId", { categoryId: id })
+                .then(function (response) {
+                    if (response.data.status == 200) {
+                        app.productList = response.data.obj
+                        $(app.productList).each(function () {
+                            this.Property = eval(this.Property)
+                        });
+                    } else
+                        alert("");
+                })
+                .catch(function (error) {
+                    this.app.productList = error
+                })
+            },
+            FuzzyQuery: function () {
+                axios.post("/product/FuzzyQuery", { Property: this.searchName })
+                .then(function (response) {
+                    if (response.data.status == 200) {
+                        this.app.productList = response.data.obj
+                        $(this.app.productList).each(function () {
+                            this.Property = eval(this.Property)
+                        });
+                    } else
+                        alert("小店暂时没货！")
+                })
+                .catch(function (error) {
+                    alert("未知请求")
+                })
+            },
+            PropertyQuery: function (name) {
+                console.log(name)
+                axios.post("/product/FuzzyQuery", { Property: name })
+                .then(function (response) {
+                    if (response.data.status == 200) {
+                        this.app.productList = response.data.obj
+                        $(this.app.productList).each(function () {
+                            this.Property = eval(this.Property)
+                        });
+                    } else
+                        alert("小店暂时没货！")
+                })
+                .catch(function (error) {
+                    alert("未知请求")
+                })
+            },
+            ToDetail: function (id) {
+                return "/Product/Detail?id=" + id
+            }
+        },
+        created: function () {
+            axios.get("/product/FindCategoryList")
+                .then(function (response) {
+                    this.app.categoryList = response.data.obj
+                })
+                .catch(function (error) {
+                    this.app.categoryList = error
+                })
+
+            axios.get("/product/FindProductList")
+                .then(function (response) {
+                    this.app.productList = response.data.obj
+                    $(this.app.productList).each(function () {
+                        this.Property = eval(this.Property)
+                    });
+                })
+                .catch(function (error) {
+                    this.app.productList = error
+                })
+
+            axios.get("/product/GetHotProName")
+                .then(function (response) {
+                    if (response.data.status == 200) {
+                        var proArray = response.data.obj;
+                        var array = [];
+                        $(proArray).each(function (index) {
+                            var pro = eval(proArray[index])
+                            $(pro).each(function (index) {
+                                for (var item in pro[index]) {                                 
+                                    array.push(item)                                                                        
+                                }
+                            })
+                        });
+                        for (var i = 0; i < array.length; i++) {
+                            if (app.propertys.indexOf(array[i]) == -1) {
+                                app.propertys.push(array[i])
+                            }
+                        }
+                    } else
+                        alert("")
+                })
+                .catch(function (error) {
+                    alert("未知请求")
+                })
+        }
+    })
+</script>

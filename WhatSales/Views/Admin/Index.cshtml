@@ -1,0 +1,144 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.6.0.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/vue.js"></script>
+</head>
+<body>
+    <div style="text-align:center">
+        <h2>用户列表</h2>
+    </div>
+    <form class="form-inline" id="adminData">
+
+        <div class="row" style="margin-bottom:10px">
+            <div class="col-md-offset-1 col-md-5">
+                <a href="/Admin/addUserView" class="btn btn-primary" style="padding:5px 20px 5px 20px">添加</a>
+            </div>
+            @*<div class="col-md-5">
+                <label style="font-size:15px;">年级:</label>@Html.DropDownList("gradeddl", null, new { @class = "form-control" })
+                <label style="font-size:15px;">班级:</label>@Html.DropDownList("classddl", null, new { @class = "form-control" })
+                <input type="submit" value="搜索" class="btn btn-default" />
+            </div>*@
+
+        </div>
+        <div class="col-md-10 col-md-offset-1">
+            <table class="table table-hover">
+                <tr class="active">
+                    <th>编号</th>
+                    <th>姓名</th>
+                    <th>状态</th>
+                    <th>创建时间</th>
+                    <th>更新时间</th>
+                    <th>删除时间</th>
+                    <th>角色</th>
+                    <th>操作</th>
+                </tr>
+
+                <tr v-for="user in users">
+                    <td v-text="user.id"></td>
+                    <td v-text="user.UserName"></td>
+                    <td v-text="status(user.Active)"></td>
+                    <td v-text="dealDate(user.CreateTime)"></td>
+                    <td v-text="dealDate(user.UpdateTime)"></td>
+                    <td v-text="dealDate(user.DeleteTime)"></td>
+                    <td v-text="ToRole(user.Role)"></td>
+                    <td>
+                        <a v-bind:href="'/Admin/updateUserView?id='+user.id">修改</a>
+                        <a v-on:click="deleteUser(user.id)">删除</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </form>
+<script>
+    var str = "/Date(-62135596800000)/";
+    let adminData = new Vue({
+        el: "#adminData",
+        data: {
+            users:[]
+        },
+        methods: {
+            dealDate: function (date) {
+                if (date == str) {
+                    return "无";
+                }
+                var myDate =  new Date(parseInt(date.replace(/\/Date\((-?\d+)\)\//, '$1')));
+                var m = myDate.getMonth()+1;
+                var d = myDate.getDate();
+                var dateTime =  myDate.getFullYear()+"-"+(m>9?m:("0"+m))
+                +"-"+(d>9?d:("0"+d))+" "+myDate.toLocaleTimeString().substring(2);
+
+                return dateTime;
+            },
+            status:function(value){
+                switch (value) {
+                    case 0: return "锁定";
+                        break;
+                    case 1: return "活跃";
+                        break;
+                    default:
+                        return "未知";
+                }
+            },
+            ToRole:function(value){
+                switch (value) {
+                    case 1: return "普通用户";
+                        break;
+                    case 2: return "管理员";
+                        break;
+                    default:
+                        return "未知";
+                }
+            },
+            loadAllUser: function () {
+                $.ajax({
+                    url: "/Admin/FindAll",
+                    type: "get",
+                    //async: false,
+                    success: function (data) {
+                        console.log(data)
+                        if (data.status == 200) {
+                            adminData.users = data.obj;
+                        } else {
+                            console.log(data.msg)
+                        }
+                    }
+                });
+            },
+            deleteUser: function (id) {
+                var flag = confirm("确定要删除该条数据么？");
+                if (!flag) {
+                    return;
+                }
+                $.ajax({
+                    url: "/Admin/DeleteUser?id=" + id,
+                    type: "get",
+                    success: function (data) {
+                        if (data.status == 200) {
+                            alert(data.msg);
+                            location.reload();
+                        } else {
+                            alert(data.msg);
+                        }
+                    }
+                })
+            }
+        },
+        created: function () {
+            this.loadAllUser();
+        }
+    });
+</script>
+
+</body>
+</html>

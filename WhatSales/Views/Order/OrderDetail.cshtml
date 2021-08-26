@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="yes" name="apple-touch-fullscreen">
+    <title>订单详情</title>
+
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <script src="~/Scripts/jquery-3.6.0.min.js" type="text/javascript"></script>
+    <script src="~/Scripts/bootstrap.min.js" type="text/javascript"></script>
+    <script src="~/Scripts/vue.js" type="text/javascript"></script>
+    <script src="~/Scripts/axios.min.js" type="text/javascript"></script>
+    <link href="~/Content/global.css" rel="stylesheet" />
+    <link href="~/Content/orderComfirm.css" rel="stylesheet" />
+
+
+</head>
+<body>
+    <div class="page-order-comfirm" id="orderComfirm">
+        <div class="section-con">
+            <div class="sec-title-border mb0 clearfix">
+                <h3>产品详情</h3>
+            </div>
+            <div class="orderBox">
+                <div class="orderC-table">
+                    <table cellspacing="0" cellpadding="0" border="0" width="100%" class="orderC-tb">
+                        <thead>
+                            <tr>
+                                <th width="60%">订单详情 </th>
+                                <th width="20%">收件人</th>
+                                <th width="20%">金额</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in OrderProducts">
+                                <td class="text-left">
+                                    <div class="order-gw clearfix">
+                                        <div class="order-img"><img src="" /></div>
+                                        <div class="order-sum">
+                                            <h2><a href="item.pro_url">{{item.ProductName}}</a></h2>
+                                            <div class="parameter">{{EditProperty(item.Property)}}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{item.UserName}}</td>
+                                <td><span class="noTel">总额</span><span class="priceD">￥{{item.Price}}</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="orderC-total">
+                        <div class="order-t">
+                            <dl class="clearfix">
+                                <dd class="dl_ddL">商品总额：</dd>
+                                <dd class="dl_ddR">￥{{Order.Price}}</dd>
+                            </dl>
+                        </div>
+                        <div class="order-fare">
+                            <dl class="clearfix">
+                                <dd class="dl_ddL">运　　费：</dd>
+                                <dd class="dl_ddR">￥0</dd>
+                            </dl>
+                        </div>
+                        <div class="order-sum">
+                            <dl class="clearfix">
+                                <dd class="dl_ddL">应付总额：</dd>
+                                <dd class="dl_ddR"><span class="fontBig">￥{{Order.Price}}</span></dd>
+                            </dl>
+                        </div>
+                    </div>
+                    <div class="order-message">
+                        <dl class="clearfix">
+                            <dd class="dl_ddL">给卖家留言：</dd>
+                            <dd class="dl_ddR">
+                                <textarea class="textarea-gw" placehold="对本次交易补充说明" maxlength="85"></textarea>
+                                <span>0/85</span>
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="clear"></div>
+                    <div class="order-submit">
+                        <a href="/Order/Cart" class="a_back">返回购物车</a>
+                        <a href="/Order/Index" class="btn-red btn-submit">提交订单</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    let app = new Vue({
+        el:'#orderComfirm',
+        data: {
+            OrderProducts: [],
+            Order: {}
+        },
+        mounted: function () {
+            this.LoadOrderProducts();
+            this.LoadOrder();
+        },
+        methods: {
+            LoadOrderProducts: function () {
+                var id = this.SubURL();
+                axios.post("/Order/FindOneOrderProduct", {
+                    "OrderId": id
+                }).then(function (res) {
+                    if (res.data.status == 200) {
+                        app.OrderProducts = res.data.obj;
+                    } else {
+                        console.log(res.data.msg);
+                    }
+                })
+            },
+            LoadOrder: function () {
+                var id = this.SubURL();
+                axios.post("/Order/FindOneOrder", {
+                    "id": id
+                }).then(function (res) {
+                    if (res.data.status == 200) {
+                        app.Order = res.data.obj;
+                    } else {
+                        console.log(res.data.msg);
+                    }
+                })
+            },
+            SubURL: function () {
+                var str = location.search.substring(4);
+                if (str=="") {
+                    return;
+                }
+                return str;
+            },
+            EditProperty: function (Param) {
+                var Propertys = JSON.parse(Param);
+                var str = "";
+                for (var index in Propertys) {
+                    for (var Property in Propertys[index]) {
+                        str += Property + ":" + Propertys[index][Property]+"\t";
+                    }
+                }
+                return str;
+            }
+        }
+    })
+</script>
+
+
+
+</html>

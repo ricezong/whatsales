@@ -1,0 +1,46 @@
+﻿body {
+}
+
+.login-banner {
+    position: relative;
+    top: 20%;
+}
+
+.login-title {
+    text-align: center;
+    margin: 20px auto;
+}
+
+.login-form {
+    border-radius: 15px;
+    background-clip: padding-box;
+    margin: 0 auto;
+    width: 350px;
+    padding: 15px 35px;
+    background: #fff;
+    border: 1px solid #eaeaea;
+    box-shadow: 0 0 25px #cac6c6;
+}
+
+.input-name{
+    height:38px;
+    border-radius:0 4px 4px 0;
+}
+.input-pwd{
+    height:38px;
+    border-radius:0 4px 4px 0;
+}
+.input-icon {
+    line-height: 38px;
+    background: #dfdfdf;
+    width: 38px;
+    height: 38px;
+    border-radius: 4px 0 0 4px;
+    text-align: center;
+    margin-top: -1px;
+}
+
+.login-button {
+    width: 100%;
+    padding: 10px 0;
+}

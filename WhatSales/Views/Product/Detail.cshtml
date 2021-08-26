@@ -1,0 +1,132 @@
+﻿@model WhatSales.Models.User
+@{
+    Layout = "~/Views/Shared/sharedPage.cshtml";
+}
+<div id="app">
+    <div class="container">
+        <div class="page-header">
+            <a href="/Product/Index" style="text-decoration:none;display:inline-block;"><h1>What Sales<small>电商平台</small></h1></a>
+            <a href="/Order/Cart" style="float:right;cursor:pointer;"><h2 style="display:inline-block;">@Model.UserName</h2><h3 style="display:inline-block;">的购物车</h3></a>
+        </div>
+        <div class="nav breadcrumb">
+            <div class="left-nav" style="float:left;">
+                <ol class="breadcrumb" style="margin:10px auto;">
+                    <li v-for="category in categoryList"><a href="#" v-on:click="FindProductListByCatecoryId(category.id)">{{category.TypeName}}</a></li>
+                </ol>
+            </div>
+            <div class="right-nav" style="float:right;height:56px;">
+                <div class="navbar-form navbar-left" style="margin:10px auto;">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search">
+                    </div>
+                    <input type="button" class="btn btn-default" value="搜索">
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="thumbnail" style="height:350px;width:550px;background-color:#eee;">
+                    <div>
+                        <h1 style="margin:0;padding-top:20%"><a>{{product.ProductName}}</a></h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="thumbnail" style="height:350px;width:550px;background-color:#eee;">
+                    <div>
+                        <h1 style="margin:0;padding-top:5%"><a>{{product.ProductName}}</a></h1>
+                    </div>
+                    <div class="caption">
+                        <h2>
+                            <span class="label label-primary" v-for="pro in propertys" style="margin:20px 20px 20px 0">{{pro}}</span>
+                        </h2>
+                        <p style="font-size:20px;color:red;text-align:right;margin:20px;">${{product.Price}}</p>
+                        <p style="text-align:center;">
+                            <a href="#" class="btn btn-primary btn-lg" role="button" style="margin-right:100px;padding:15px 50px" onclick="GoToCart()">立即购买</a>
+                            <a href="#" class="btn btn-primary btn-lg" role="button" style="padding: 15px 50px" onclick="AddToCart()">加入购物车</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            categoryList: [],
+            propertys: [],
+            product: {}          
+        },
+        created: function () {
+            axios.get("/product/FindCategoryList")
+                .then(function (response) {
+                    app.categoryList = response.data.obj
+                })
+                .catch(function (error) {
+                    app.categoryList = error
+                })
+            var id = location.search.substring(4)
+            axios.get("/product/FindOneProduct?id=" + id)
+                .then(function (response) {
+                    app.product = response.data.obj
+                    var pro = eval(app.product.Property)
+                    $(pro).each(function (index) {
+                        console.log(pro[index])
+                        for (var item in eval(pro[index])) {
+                            app.propertys.push(pro[index][item])
+                        }
+                    });
+
+                })
+                .catch(function (error) {
+                    app.product = error
+                })
+        }
+    })
+
+    function AddToCart() {
+        var data = {
+            "ProductId": app.product.id,
+            "Price": app.product.Price,
+        }
+        $.ajax({
+            url: "/Order/AddToCart",
+            type: "post",
+            data: data,
+            success: function (data) {
+                if (data.status == 200) {
+                    alert(data.msg);
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+
+    function GoToCart() {
+        var data = {
+            "ProductId": app.product.id,
+            "Price": app.product.Price,
+        }
+        $.ajax({
+            url: "/Order/AddToCart",
+            type: "post",
+            data: data,
+            success: function (data) {
+                if (data.status == 200) {
+                    window.location="/Order/Cart"
+                } else {
+                    alert(data.msg);
+                }
+            }
+        });
+    }
+</script>
+
+
+
+
+

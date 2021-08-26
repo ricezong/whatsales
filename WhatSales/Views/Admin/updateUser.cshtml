@@ -1,0 +1,164 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>updateUser</title>
+
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.6.0.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/vue.js"></script>
+</head>
+<body>
+    <div style="text-align:center">
+        <h2>修改信息</h2>
+    </div>
+    <form class="form-horizontal" id="updateUser" action="javascript:">
+        <div style="width: 500px; margin: 50px auto 0 auto">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">用户名</label>
+                <div class="col-sm-8">
+                    <input type="hidden" value="user.id" />
+                    <input type="text" class="form-control" id="username"  :value="user.UserName" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">状态</label>
+                <div class="col-sm-8">
+                    <select class="form-control" id="active">
+                        <option  value="1">活跃</option>
+                        <option value="0">锁定</option>
+                    </select>
+                </div>
+            </div>
+            @*<div class="form-group">
+                <label class="col-sm-2 control-label">密码</label>
+                <div class="col-sm-8">
+                    <input type="password" class="form-control" :value="user.PassWord">
+                </div>
+            </div>*@
+            <div class="form-group">
+                <label class="col-sm-2 control-label">角色</label>
+                <div class="col-sm-8">
+                    <select class="form-control" id="role">
+                        <option value="1">user</option>
+                        <option value="2">admin</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">创建时间</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" :value="dealDate(user.CreateTime)">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">更新时间</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" :value="dealDate(user.UpdateTime)">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">删除时间</label>
+                <div class="col-sm-8">
+                    <input type="text" class="form-control" :value="dealDate(user.DeleteTime)">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" />
+                            Remember me
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-10">
+                    <input type="button" class="btn btn-default" value="提交" v-on:click="update()">
+                </div>
+            </div>
+        </div>
+    </form>
+    <script>
+
+        let updateUser = new Vue({
+            el: "#updateUser",
+            data: {
+                user:{
+                    UserName: "",
+                    PassWord:"",
+                    Active: "",
+                    Salt:"",
+                    Role:"",
+                    CreateTime:"",
+                    UpdateTime:"",
+                    DeleteTime:"",
+                }
+            },
+            methods: {
+                dealDate: function (date) {
+                    var myDate = new Date(parseInt(date.replace(/\/Date\((-?\d+)\)\//, '$1')));
+                    var m = myDate.getMonth() + 1;
+                    var d = myDate.getDate();
+                    var dateTime = myDate.getFullYear() + "-" + (m > 9 ? m : ("0" + m))
+                    + "-" + (d > 9 ? d : ("0" + d)) + " " + myDate.toLocaleTimeString().substring(2);
+                    return dateTime;
+                },
+                loadUser: function () {
+                    var str = location.search.substring(4);
+                    $.ajax({
+                        url: "/Admin/FindOne",
+                        type: "post",
+                        data: "id="+str,
+                        success: function (data) {
+                            console.log(data)
+                            if (data.status == 200) {
+                                updateUser.user = data.obj;
+                                $("#active").val(updateUser.user.Active);
+                                $("#role").val(updateUser.user.Role);
+                            } else {
+                                console.log(data.msg)
+                            }
+                        }
+                    });
+                },
+                update: function () {
+                    var data = {
+                        "id":this.user.id,
+                        "UserName": $("#username").val(),
+                        "Active": $("#active").val(),
+                        "Salt": this.user.Salt,
+                        "Role": $("#role").val(),
+                        "CreateTime": this.user.CreateTime,
+                        "UpdateTime": this.user.UpdateTime,
+                        "DeleteTime": this.user.DeleteTime,
+                    }
+                    $.ajax({
+                        url: "/Admin/UpdateUser",
+                        type: "post",
+                        data: data,
+                        success: function (data) {
+                            if (data.status == 200) {
+                                alert(data.msg);
+                                location.href = "/Admin/Index";
+                            } else {
+                                alert(data.msg);
+                            }
+                        }
+                    });
+                }
+            },
+            created: function () {
+                this.loadUser();
+            }
+        });
+    </script>
+</body>
+</html>

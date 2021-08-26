@@ -1,0 +1,15 @@
+﻿<div class="col-xs-6 col-md-3" v-for="product in productList">
+    <a href="#" style="text-decoration:none;">
+        <div class="thumbnail">
+            <div style="height:180px;background-color:rgb(238,238,238);">
+                <h3 style="white-space: nowrap;text-overflow: ellipsis;overflow: hidden;margin-top:0;padding:50px 10px 0 10px;">{{product.ProductName}}</h3>
+            </div>
+            <div class="caption">
+                <span class="label label-primary">Primary</span>
+                <span class="label label-primary">Primary</span>
+                <span class="label label-primary">Primary</span>
+                <p style="text-align:right;color:red;">${{product.Price}}</p>
+            </div>
+        </div>
+    </a>
+</div>

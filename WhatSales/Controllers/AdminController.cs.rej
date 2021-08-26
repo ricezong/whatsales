@@ -1,0 +1,12 @@
+diff a/WhatSales/Controllers/AdminController.cs b/WhatSales/Controllers/AdminController.cs	(rejected hunks)
+@@ -166,6 +166,9 @@
+             return Json(RespBean.fail("删除失败"), JsonRequestBehavior.AllowGet);
+         }
+ 
+-        
++        public void test()
++        {
++
++        }
+     }
+ }
